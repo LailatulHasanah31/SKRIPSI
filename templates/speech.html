@@ -1,33 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech Recognition with Flask</title>
+    <meta charset="utf-8">
+    <title>Speech Recorder</title>
 </head>
 <body>
-    <h1>Speech Recognition with Flask</h1>
-    <button id="startRecognition">Start Recognition</button>
-    <p id="result"></p>
+    <div class="container">
+        <div class="display">
 
-    <script>
-        document.getElementById('startRecognition').addEventListener('click', function() {
-            // Meminta izin untuk mengakses mikrofon
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(function(stream) {
-                    console.log('Microphone access granted');
-                    
-                    // Jika izin diberikan, lanjutkan dengan mengirim permintaan POST
-                    fetch('/speech', { method: 'POST' })
-                        .then(response => response.json())
-                        .then(data => {
-                            document.getElementById('result').textContent = data.result;
-                        });
-                })
-                .catch(function(err) {
-                    console.error('Tidak dapat mengakses mikrofon:', err);
-                });
-        });
-    </script>
+        </div>
+
+        <div class="controllers">
+
+        </div>
+    </div>
 </body>
+<script src="{{ url_for('serve_static', filename='vrecorder.js') }}"></script>
 </html>
