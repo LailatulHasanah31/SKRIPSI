@@ -120,7 +120,7 @@ const application = (index) => {
             clearDisplay()
 
             addAudio()
-            addButton('record', 'record()', 'Record Again')
+            //addButton('record', 'record()', 'Record Again')
             break
 
         default:
