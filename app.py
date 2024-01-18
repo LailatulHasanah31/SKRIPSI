@@ -9,7 +9,7 @@
 
 
 # library speech
-#import speech_recognition as sr
+import speech_recognition as sr
 #import pyaudio
 
 
@@ -53,17 +53,34 @@ def save_audio():
     data = request.get_json()
     audio_url = data.get('audio_url')
 
-    #new_record = AudioRecord(audio_url=audio_url)
-    db = mysql.connection.cursor()
-    db.execute("INSERT INTO audio_records(audio_data) VALUES (%s)", (audio_url,))
-    #db.session.commit()
+    # Langkah 1: Mengenali ucapan
+    recognizer = sr.Recognizer()
 
-    
-    #
+    # Menggunakan 'audio_url' sebagai URL file audio
+    audio_file = sr.AudioFile(audio_url)
+
+    with audio_file as source:
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.record(source)
+
+    try:
+        input_text = recognizer.recognize_google(audio, language='in-ID')  # Ganti dengan kode bahasa yang sesuai
+        print('Speech Recognition Result:', input_text)
+    except sr.UnknownValueError:
+        print('Speech Recognition could not understand audio')
+        return jsonify({'message': 'Speech Recognition could not understand audio'})
+    except sr.RequestError as e:
+        print(f'Speech Recognition request failed: {e}')
+        return jsonify({'message': 'Speech Recognition request failed'})
+
+    #Menyimpan audio ke database
+    db = mysql.connection.cursor()
+    db.execute("INSERT INTO audio_records(audio_data, description) VALUES (%s, %s)", (audio_url, input_text))
     mysql.connection.commit()
     db.close()
 
-    return jsonify({'message': 'Audio saved successfully'})
+    return jsonify({'message': 'Audio saved and recognized successfully'})
+
 
 #database
         
