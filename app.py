@@ -11,16 +11,17 @@
 # library speech
 import speech_recognition as sr
 import os
-import requests
-import base64
-from pydub import AudioSegment
-import logging
+# import requests
+# import base64
+# from pydub import AudioSegment
+# import logging
 #import pyaudio
 
 
 
 # app.py
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, jsonify, send_from_directory
+# from werkzeug.utils import secure_filename
 # from flask_mysqldb import MySQL
 #from flask_sqlalchemy import SQLAlchemy
 #from flask_migrate import Migrate
@@ -60,6 +61,10 @@ with open(counter_file_path, 'w') as f:
 def index():
     return render_template('index.html')
 
+@app.route('/home')
+def home():
+    return render_template('index.html')
+
 @app.route('/static/js/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static/js', filename)
@@ -73,8 +78,8 @@ def speech_render():
 #     filename = f'audio_{fileCounter}.webm'
 #     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
+@app.route('/record', methods=['POST'])
+def record_file():
     global fileCounter  # Gunakan variabel global
 
     if 'audioBlob' not in request.files:
@@ -87,9 +92,14 @@ def upload_file():
 
     if file:
         filename = f'audio_{fileCounter}.webm'
+        # file.seek(0)
+        # filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        file.seek(0)
-        fileCounter += 1  # Increment urutan file
+        # file.flush()
+        file.close()
+        
+        
+        # fileCounter += 1  # Increment urutan file
         return f'Audio berhasil diunggah dengan nama {filename}'
 
     # # Langkah 1: Mengenali ucapan
@@ -120,7 +130,48 @@ def upload_file():
 
 
 #database
-        
+@app.route('/upload_render')
+def upload_render():
+    return render_template('upload.html')        
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'suara' not in request.files:
+        return redirect(request.url)
+
+    file = request.files['suara']
+
+    if file.filename == '' or not file.filename.endswith('.webm'):
+        return redirect(request.url)
+
+    filename = f'audio_{fileCounter}.webm'
+    # filename_wav = f'audio_{fileCounter}.wav'
+    #     # file.seek(0)
+    #     # filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    # audio = AudioSegment.from_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), format="webm")
+    # audio.export(os.path.join(app.config['UPLOAD_FOLDER'], filename_wav), format="wav")
+
+    #  # Langkah 1: Mengenali ucapan
+    # recognizer = sr.Recognizer()
+
+    # # Menggunakan 'audio_url' sebagai URL file audio
+    # audio_file = sr.AudioFile(file)
+
+    # with audio_file as source:
+    #     recognizer.adjust_for_ambient_noise(source)
+    #     audio = recognizer.record(source)
+
+    # try:
+    #     input_text = recognizer.recognize_google(audio, language='in-ID')  # Ganti dengan kode bahasa yang sesuai
+    #     print('Speech Recognition Result:', input_text)
+    # except sr.UnknownValueError:
+    #     print('Speech Recognition could not understand audio')
+    #     return jsonify({'message': 'Speech Recognition could not understand audio'})
+    # except sr.RequestError as e:
+    #     print(f'Speech Recognition request failed: {e}')
+    #     return jsonify({'message': 'Speech Recognition request failed'})
+    return f'Suara berhasil diunggah!'
 
 if __name__ == '__main__':
     app.run(debug=True)

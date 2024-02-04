@@ -60,7 +60,7 @@ const uploadAudio = () => {
     const formData = new FormData();
     formData.append('audioBlob', new Blob(chunks, { 'type': 'audio/webm' }));
 
-    fetch('/upload', {
+    fetch('/record', {
         method: 'POST',
         body: formData
     }).then(response => {
