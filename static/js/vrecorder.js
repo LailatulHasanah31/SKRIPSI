@@ -1,136 +1,140 @@
 // collect DOMs
-const display = document.querySelector('.display')
-const controllerWrapper = document.querySelector('.controllers')
+const display = document.querySelector('.display');
+const controllerWrapper = document.querySelector('.controllers');
 
-const State = ['Initial', 'Record', 'Download']
-let stateIndex = 0
-let mediaRecorder, chunks = [], audioURL = ''
+const State = ['Initial', 'Record', 'Download'];
+let stateIndex = 0;
+let mediaRecorder, chunks = [], audioURL = '';
+let fileCounter = 1; // Nomor urut file
 
 // mediaRecorder setup for audio
-if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     console.log('mediaDevices supported..')
 
     navigator.mediaDevices.getUserMedia({
         audio: true
     }).then(stream => {
-        mediaRecorder = new MediaRecorder(stream)
+        mediaRecorder = new MediaRecorder(stream);
 
         mediaRecorder.ondataavailable = (e) => {
-            chunks.push(e.data)
+            chunks.push(e.data);
         }
 
         mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, {'type': 'audio/ogg; codecs=opus'})
-            chunks = []
-            audioURL = window.URL.createObjectURL(blob)
-            document.querySelector('audio').src = audioURL
-
+            const blob = new Blob(chunks, { 'type': 'audio/webm' });
+            chunks = [];
+            audioURL = window.URL.createObjectURL(blob);
+            document.querySelector('audio').src = audioURL;
+            uploadAudio(); // Upload audio after recording stops
         }
     }).catch(error => {
-        console.log('Following error has occured : ',error)
-    })
-}else{
-    stateIndex = ''
-    application(stateIndex)
+        console.log('Error yang terjadi: ', error);
+    });
+} else {
+    stateIndex = '';
+    application(stateIndex);
 }
 
 const clearDisplay = () => {
-    display.textContent = ''
+    display.textContent = '';
 }
 
 const clearControls = () => {
-    controllerWrapper.textContent = ''
+    controllerWrapper.textContent = '';
 }
 
 const record = () => {
-    stateIndex = 1
-    mediaRecorder.start()
-    application(stateIndex)
+    stateIndex = 1;
+    chunks = []; // Reset chunks
+    mediaRecorder.start();
+    application(stateIndex);
 }
 
 const stopRecording = () => {
-    stateIndex = 2
-    mediaRecorder.stop()
-    application(stateIndex)
+    stateIndex = 2;
+    mediaRecorder.stop();
+    application(stateIndex);
+}
 
-    // Simpan rekaman ke dalam database melalui endpoint Flask
-    fetch('/save_audio', {
+const uploadAudio = () => {
+    const formData = new FormData();
+    formData.append('audioBlob', new Blob(chunks, { 'type': 'audio/webm' }));
+
+    fetch('/upload', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ audio_url: audioURL }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            console.log('Audio berhasil diunggah');
+            // downloadAudio(); // Trigger download after successful upload
+        } else {
+            console.error('Gagal mengunggah audio');
+        }
+    }).catch(error => {
+        console.error('Error mengunggah audio: ', error);
     });
 }
 
 const downloadAudio = () => {
-    const downloadLink = document.createElement('a')
-    downloadLink.href = audioURL
-    downloadLink.setAttribute('download', 'audio')
-    downloadLink.click()
+    const downloadLink = document.createElement('a');
+    downloadLink.href = audioURL;
+    downloadLink.setAttribute('download', `audio_${fileCounter}.webm`); // Set filename with counter
+    downloadLink.click();
 }
 
 const addButton = (id, funString, text) => {
-    const btn = document.createElement('button')
-    btn.id = id
-    btn.setAttribute('onclick', funString)
-    btn.textContent = text
-    controllerWrapper.append(btn)
+    const btn = document.createElement('button');
+    btn.id = id;
+    btn.setAttribute('onclick', funString);
+    btn.textContent = text;
+    controllerWrapper.append(btn);
 }
 
 const addMessage = (text) => {
-    const msg = document.createElement('p')
-    msg.textContent = text
-    display.append(msg)
+    const msg = document.createElement('p');
+    msg.textContent = text;
+    display.append(msg);
 }
 
 const addAudio = () => {
-    const audio = document.createElement('audio')
-    audio.controls = true
-    audio.src = audioURL
-    display.append(audio)
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.src = audioURL;
+    display.append(audio);
 }
 
 const application = (index) => {
     switch (State[index]) {
         case 'Initial':
-            clearDisplay()
-            clearControls()
+            clearDisplay();
+            clearControls();
 
-            addButton('record', 'record()', 'Start Recording')
+            addButton('record', 'record()', 'Start Recording');
             break;
 
         case 'Record':
-            clearDisplay()
-            clearControls()
+            clearDisplay();
+            clearControls();
 
-            addMessage('Recording...')
-            addButton('stop', 'stopRecording()', 'Stop Recording')
-            break
+            addMessage('Recording...');
+            addButton('stop', 'stopRecording()', 'Stop Recording');
+            break;
 
         case 'Download':
-            clearControls()
-            clearDisplay()
+            clearControls();
+            clearDisplay();
 
-            addAudio()
-            //addButton('record', 'record()', 'Record Again')
-            break
+            addAudio();
+            addButton('download', 'downloadAudio()', 'Download Audio');
+            break;
 
         default:
-            clearControls()
-            clearDisplay()
+            clearControls();
+            clearDisplay();
 
-            addMessage('Your browser does not support mediaDevices')
+            addMessage('Your browser does not support mediaDevices');
             break;
     }
-
 }
 
-application(stateIndex)
+application(stateIndex);
