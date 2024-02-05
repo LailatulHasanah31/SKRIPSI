@@ -11,6 +11,7 @@
 # library speech
 import speech_recognition as sr
 import os
+import moviepy.editor as moviepy
 # import requests
 # import base64
 # from pydub import AudioSegment
@@ -145,7 +146,6 @@ def upload():
         return redirect(request.url)
 
     filename = f'audio_{fileCounter}.webm'
-    # filename_wav = f'audio_{fileCounter}.wav'
     #     # file.seek(0)
     #     # filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -171,7 +171,32 @@ def upload():
     # except sr.RequestError as e:
     #     print(f'Speech Recognition request failed: {e}')
     #     return jsonify({'message': 'Speech Recognition request failed'})
-    return f'Suara berhasil diunggah!'
+    return render_template('upload.html', message='Suara berhasil diunggah!')
+
+
+@app.route('/konversi', methods=['POST'])
+def konversi():
+    global fileCounter
+    filename = f'audio_{fileCounter}.webm'
+    filename_wav = f'audio_{fileCounter}.wav'
+
+    # Path ke file input di folder static/audio
+    input_file_path = os.path.join('static', 'audio', filename)
+
+    # Path untuk menyimpan file output di folder static/audio
+    output_file_path = os.path.join('static', 'audio', filename_wav)
+
+    # Memastikan file input ada sebelum membuat objek VideoFileClip
+    if not os.path.exists(input_file_path):
+        return 'File input tidak ditemukan'
+
+    # Membuat objek VideoFileClip
+    clip = moviepy.VideoFileClip(input_file_path)
+
+    # Menyimpan file audio ke format wav di folder static/audio
+    clip.audio.write_audiofile(output_file_path)
+    return render_template('upload.html', message2='Suara berhasil dikonversi')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
