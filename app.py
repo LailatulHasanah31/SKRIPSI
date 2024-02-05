@@ -152,25 +152,6 @@ def upload():
     # audio = AudioSegment.from_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), format="webm")
     # audio.export(os.path.join(app.config['UPLOAD_FOLDER'], filename_wav), format="wav")
 
-    #  # Langkah 1: Mengenali ucapan
-    # recognizer = sr.Recognizer()
-
-    # # Menggunakan 'audio_url' sebagai URL file audio
-    # audio_file = sr.AudioFile(file)
-
-    # with audio_file as source:
-    #     recognizer.adjust_for_ambient_noise(source)
-    #     audio = recognizer.record(source)
-
-    # try:
-    #     input_text = recognizer.recognize_google(audio, language='in-ID')  # Ganti dengan kode bahasa yang sesuai
-    #     print('Speech Recognition Result:', input_text)
-    # except sr.UnknownValueError:
-    #     print('Speech Recognition could not understand audio')
-    #     return jsonify({'message': 'Speech Recognition could not understand audio'})
-    # except sr.RequestError as e:
-    #     print(f'Speech Recognition request failed: {e}')
-    #     return jsonify({'message': 'Speech Recognition request failed'})
     return render_template('upload.html', message='Suara berhasil diunggah!')
 
 
@@ -195,8 +176,42 @@ def konversi():
 
     # Menyimpan file audio ke format wav di folder static/audio
     clip.audio.write_audiofile(output_file_path)
-    return render_template('upload.html', message2='Suara berhasil dikonversi')
+    return render_template('upload.html', message2='File berhasil dikonversi')
 
+
+@app.route('/extract', methods=['POST'])
+def extract():
+    global fileCounter
+    filename_wav = f'audio_{fileCounter}.wav'
+
+    # Path untuk menyimpan file output di folder static/audio
+    input = os.path.join('static', 'audio', filename_wav)
+
+    # Memastikan file input ada sebelum membuat objek VideoFileClip
+    if not os.path.exists(input):
+        return 'File input tidak ditemukan'
+    
+     # Langkah 1: Mengenali ucapan
+    recognizer = sr.Recognizer()
+
+    # Menggunakan 'audio_url' sebagai URL file audio
+    audio_file = sr.AudioFile(input)
+
+    with audio_file as source:
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.record(source)
+
+    try:
+        input_text = recognizer.recognize_google(audio, language='in-ID')  # Ganti dengan kode bahasa yang sesuai
+        print('Speech Recognition Result:', input_text)
+    except sr.UnknownValueError:
+        print('Speech Recognition could not understand audio')
+        return jsonify({'message': 'Speech Recognition could not understand audio'})
+    except sr.RequestError as e:
+        print(f'Speech Recognition request failed: {e}')
+        return jsonify({'message': 'Speech Recognition request failed'})
+
+    return render_template('upload.html', message3=input_text)
 
 if __name__ == '__main__':
     app.run(debug=True)

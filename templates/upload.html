@@ -22,4 +22,17 @@
     {% endif %}
 </div>
 
+{% if message2 == 'File berhasil dikonversi' %}
+    <form action="{{ url_for('extract') }}" method="post">
+        <input type="hidden" name="filename_wav" value="{{ filename_wav }}">
+        <button type="submit">Extract</button>
+    </form>
+{% endif %}
+
+<div id="notification">
+    {% if message3 %}
+        <p>{{ message3 }}</p>
+    {% endif %}
+</div>
+
 <a href="{{ url_for('home') }}">Kembali</a>
