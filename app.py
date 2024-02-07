@@ -5,19 +5,23 @@
 #pip install Flask Flask-Migrate
 #pip install mysqlclient
 #pip install flask-mysqldb
+#pip install openai
 
 
 
 # library speech
 import speech_recognition as sr
 import os
-import moviepy.editor as moviepy
+# import moviepy.editor as moviepy
+from moviepy.editor import AudioFileClip
 # import requests
 # import base64
 # from pydub import AudioSegment
 # import logging
 #import pyaudio
 
+#library chatgpt
+from openai import OpenAI
 
 
 # app.py
@@ -42,13 +46,13 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Contoh: 16 MB
 counter_file_path = 'counter.txt'
 if os.path.exists(counter_file_path):
     with open(counter_file_path, 'r') as f:
-        fileCounter = int(f.read())
+        fileCounter = f.read()
 
 # Menyimpan nilai yang telah diincrement ke dalam file counter.txt
 with open(counter_file_path, 'w') as f:
     files = os.listdir('static/audio')
-    fileCounter = len(files)
-    fileCounter += 1
+    fileCounter = len(files)/2
+    fileCounter += 1 
     f.write(str(fileCounter))
 
 # app.config['MYSQL_HOST'] = 'localhost'
@@ -100,7 +104,7 @@ def record_file():
         file.close()
         
         
-        # fileCounter += 1  # Increment urutan file
+        fileCounter += 1  # Increment urutan file
         return f'Audio berhasil diunggah dengan nama {filename}'
 
     # # Langkah 1: Mengenali ucapan
@@ -137,28 +141,31 @@ def upload_render():
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    # global fileCounter
+
     if 'suara' not in request.files:
         return redirect(request.url)
 
     file = request.files['suara']
 
-    if file.filename == '' or not file.filename.endswith('.webm'):
+    if file.filename == '' or not file.filename.endswith('.mp3'):
         return redirect(request.url)
 
-    filename = f'audio_{fileCounter}.webm'
+    filename = f'audio_{fileCounter}.mp3'
     #     # file.seek(0)
     #     # filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    
     # audio = AudioSegment.from_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), format="webm")
     # audio.export(os.path.join(app.config['UPLOAD_FOLDER'], filename_wav), format="wav")
-
+    
     return render_template('upload.html', message='Suara berhasil diunggah!')
 
 
 @app.route('/konversi', methods=['POST'])
 def konversi():
     global fileCounter
-    filename = f'audio_{fileCounter}.webm'
+    filename = f'audio_{fileCounter}.mp3'
     filename_wav = f'audio_{fileCounter}.wav'
 
     # Path ke file input di folder static/audio
@@ -172,10 +179,12 @@ def konversi():
         return 'File input tidak ditemukan'
 
     # Membuat objek VideoFileClip
-    clip = moviepy.VideoFileClip(input_file_path)
+    # clip = moviepy.VideoFileClip(input_file_path)
+    clip = AudioFileClip(input_file_path)
 
     # Menyimpan file audio ke format wav di folder static/audio
-    clip.audio.write_audiofile(output_file_path)
+    # clip.audio.write_audiofile(output_file_path)
+    clip.write_audiofile(output_file_path, codec='pcm_s16le')
     return render_template('upload.html', message2='File berhasil dikonversi')
 
 
@@ -210,8 +219,102 @@ def extract():
     except sr.RequestError as e:
         print(f'Speech Recognition request failed: {e}')
         return jsonify({'message': 'Speech Recognition request failed'})
+    
+    
+    #client = OpenAI()
+    client = OpenAI(api_key='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')
+    #input_text = "Namaku Hasanah aku punya adik bernama ani dan budi ani berumur 9 tahun sedangkan budi berumur 12 tahun"
 
-    return render_template('upload.html', message3=input_text)
+    system_prompt = """Tugas kamu adalah bertindak sebagai pengekstrak teks. User akan memberi kamu teks didalam triple backticks. 
+                    Dan tugas kamu untuk mencari dan mengembalikan 
+                    nama bisa diperbaiki dengan melihat ejaan nama, 
+                    umur kalau sekarang tanggal 2 Februari 2024(dalam bentuk integer penghitungan dengan teknik flooring), 
+                    jenis kelamin, 
+                    agama, 
+                    nik harus 16 digit kalau ada angka yang terpisah gabungkan saja, 
+                    tanggal lahir, 
+                    tempat lahir, 
+                    dan kewarganegaraan 
+                    dari teks tersebut."""
+    # Panggil API OpenAI untuk mendapatkan respons
+    completion = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": f"```{input_text}```"}
+    ])
+
+    # Ekstrak nama dan umur dari respons
+    extracted_data = completion.choices[0].message.content
+    #print(completion)
+    # Pisahkan nama dan umur (contoh sederhana)
+    #nama = extracted_data.split("Nama")[1].strip()
+
+    # Tampilkan hasil ekstraksi data
+    print(extracted_data)
+
+    data_lines = extracted_data.split('\n')
+
+    # Inisialisasi variabel
+    nama = None
+    umur = None
+    jenis_kelamin = None
+    agama = None
+    nik = None
+    tanggal_lahir = None
+    tempat_lahir = None
+    kewarganegaraan = None
+
+    # Iterasi melalui setiap baris data dan ekstrak informasi yang diperlukan
+    for line in data_lines:
+        if 'Nama:' in line:
+            nama = line.split(':')[1].strip()
+        elif 'Umur:' in line:
+            umur = line.split(':')[1].strip()
+        elif 'Jenis kelamin:' in line or 'Jenis Kelamin:' in line:
+            jenis_kelamin = line.split(':')[1].strip()
+        elif 'Agama:' in line:
+            agama = line.split(':')[1].strip()
+        elif 'NIK:' in line:
+            nik = line.split(':')[1].strip()
+        elif 'Tanggal lahir:' in line or 'Tanggal Lahir:' in line:
+            tanggal_lahir = line.split(':')[1].strip()
+        elif 'Tempat lahir:' in line or 'Tempat Lahir:' in line:
+            tempat_lahir = line.split(':')[1].strip()
+        elif 'Kewarganegaraan:' in line:
+            kewarganegaraan = line.split(':')[1].strip()
+
+    # fileCounter += 1 
+    # Tampilkan hasil ekstraksi data
+    print(nama)
+    print(umur)
+    print(jenis_kelamin)
+    print(agama)
+    print(nik)
+    print(tanggal_lahir)
+    print(tempat_lahir)
+    print(kewarganegaraan)
+    return render_template('upload.html', 
+                           filename_wav = filename_wav,
+                           message3=input_text,
+                           extracted_data=extracted_data,
+                           nama=nama,
+                           umur=umur,
+                           jenis_kelamin=jenis_kelamin,
+                           agama=agama,
+                           nik=nik,
+                           tanggal_lahir=tanggal_lahir,
+                           tempat_lahir=tempat_lahir,
+                           kewarganegaraan=kewarganegaraan
+                          )
+
+@app.route('/simpan', methods=['POST'])
+def simpan():
+    global fileCounter
+    fileCounter += 1 
+    
+    return render_template('index.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,20 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Speech Recorder</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekam</title>
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link href="static/css/viewandro.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <div class="display">
-
+        <div class="screen">
+            <div class="screen__content">
+            <div class="container">
+            <div class="display">
+    
+            </div>
+    
+            <div class="controllers">
+    
+            </div>
         </div>
-
-        <div class="controllers">
-
+        <a href="{{ url_for('home') }}">Kembali</a>
+            </div>
         </div>
-    </div>
-    <a href="{{ url_for('home') }}">Kembali</a>
+    </div>    
 </body>
 <script src="{{ url_for('serve_static', filename='vrecorder.js') }}"></script>
 </html>
