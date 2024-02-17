@@ -222,7 +222,7 @@ def extract():
     
     
     #client = OpenAI()
-    client = OpenAI(api_key='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')
+    client = OpenAI(api_key='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')
     #input_text = "Namaku Hasanah aku punya adik bernama ani dan budi ani berumur 9 tahun sedangkan budi berumur 12 tahun"
 
     system_prompt = """Tugas kamu adalah bertindak sebagai pengekstrak teks. User akan memberi kamu teks didalam triple backticks. 
