@@ -11,7 +11,7 @@
 
 # library speech
 import speech_recognition as sr
-import os
+import os, re, json
 # import moviepy.editor as moviepy
 from moviepy.editor import AudioFileClip
 # import requests
@@ -222,20 +222,33 @@ def extract():
     
     
     #client = OpenAI()
-    client = OpenAI(api_key='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')
+    client = OpenAI()
     #input_text = "Namaku Hasanah aku punya adik bernama ani dan budi ani berumur 9 tahun sedangkan budi berumur 12 tahun"
 
     system_prompt = """Tugas kamu adalah bertindak sebagai pengekstrak teks. User akan memberi kamu teks didalam triple backticks. 
                     Dan tugas kamu untuk mencari dan mengembalikan 
-                    nama bisa diperbaiki dengan melihat ejaan nama, 
+                    provinsi (jika user tidak menyebutkan provinsi kamu bisa lihat dari kabupaten, kecamatan, dan desa kira-kira itu di provinsi mana),
+                    kabupaten/kota (jika user tidak menyebutkan kabupaten/kota kamu bisa lihat dari provinsi, kecamatan, dan desa kira-kira itu di kabupaten/kota mana),
+                    kecamatan (jika user tidak menyebutkan kecamatan kamu bisa lihar dari provinsi, kabupaten/kota, dan desa kira-kira itu di kecamatan mana),
+                    desa/kelurahan,
+                    nama_kepala_keluarga,
+                    jumlah_anggota_keluarga,
+                    status_kepemilikan_rumah,
+                    penggunaan_listrik,
+                    sumber_air_minum,
+                    kepemilikan_jamban,
+                    jenis_lantai,
+                    lalu untuk bagian yang ini kamu harus mengekstrak sesuai banyaknya jumlah anggota keluarga semacam list yang disimpan dalam format json dengan rincian pertanyaan masing-masing anggota keluarga
+                    nama,
+                    jenis kelamin,
+                    tempat_lahir,
+                    tanggal_lahir,
                     umur kalau sekarang tanggal 2 Februari 2024(dalam bentuk integer penghitungan dengan teknik flooring), 
-                    jenis kelamin, 
+                    kewarganegaraan,
                     agama, 
-                    nik harus 16 digit kalau ada angka yang terpisah gabungkan saja, 
-                    tanggal lahir, 
-                    tempat lahir, 
-                    dan kewarganegaraan 
-                    dari teks tersebut."""
+                    status_hubungan_dengan_kepala_keluarga, 
+                    dan ijazah_tertinggi
+                    dari teks tersebut dengan tulisan casefolding semua dan disimpan dalam bentuk json."""
     # Panggil API OpenAI untuk mendapatkan respons
     completion = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -255,57 +268,69 @@ def extract():
 
     data_lines = extracted_data.split('\n')
 
+    data = json.loads(extracted_data)
+
+    # pola_anggota_keluarga = r'(?<=detail anggota keluarga:)\s*\d+\.(.*?)(?=\d+\.)'
+    # hasil_cocok = re.findall(pola_anggota_keluarga, extracted_data, re.DOTALL)
+    # print(hasil_cocok)
+
     # Inisialisasi variabel
-    nama = None
-    umur = None
-    jenis_kelamin = None
-    agama = None
-    nik = None
-    tanggal_lahir = None
-    tempat_lahir = None
-    kewarganegaraan = None
+    # nama = None
+    # umur = None
+    # jenis_kelamin = None
+    # agama = None
+    # nik = None
+    # tanggal_lahir = None
+    # tempat_lahir = None
+    # kewarganegaraan = None
 
-    # Iterasi melalui setiap baris data dan ekstrak informasi yang diperlukan
-    for line in data_lines:
-        if 'Nama:' in line:
-            nama = line.split(':')[1].strip()
-        elif 'Umur:' in line:
-            umur = line.split(':')[1].strip()
-        elif 'Jenis kelamin:' in line or 'Jenis Kelamin:' in line:
-            jenis_kelamin = line.split(':')[1].strip()
-        elif 'Agama:' in line:
-            agama = line.split(':')[1].strip()
-        elif 'NIK:' in line:
-            nik = line.split(':')[1].strip()
-        elif 'Tanggal lahir:' in line or 'Tanggal Lahir:' in line:
-            tanggal_lahir = line.split(':')[1].strip()
-        elif 'Tempat lahir:' in line or 'Tempat Lahir:' in line:
-            tempat_lahir = line.split(':')[1].strip()
-        elif 'Kewarganegaraan:' in line:
-            kewarganegaraan = line.split(':')[1].strip()
+    # # Iterasi melalui setiap baris data dan ekstrak informasi yang diperlukan
+    # for line in data_lines:
+    #     if 'Nama:' in line:
+    #         nama = line.split(':')[1].strip()
+    #     elif 'Umur:' in line:
+    #         umur = line.split(':')[1].strip()
+    #     elif 'Jenis kelamin:' in line or 'Jenis Kelamin:' in line:
+    #         jenis_kelamin = line.split(':')[1].strip()
+    #     elif 'Agama:' in line:
+    #         agama = line.split(':')[1].strip()
+    #     elif 'NIK:' in line:
+    #         nik = line.split(':')[1].strip()
+    #     elif 'Tanggal lahir:' in line or 'Tanggal Lahir:' in line:
+    #         tanggal_lahir = line.split(':')[1].strip()
+    #     elif 'Tempat lahir:' in line or 'Tempat Lahir:' in line:
+    #         tempat_lahir = line.split(':')[1].strip()
+    #     elif 'Kewarganegaraan:' in line:
+    #         kewarganegaraan = line.split(':')[1].strip()
 
-    # fileCounter += 1 
-    # Tampilkan hasil ekstraksi data
-    print(nama)
-    print(umur)
-    print(jenis_kelamin)
-    print(agama)
-    print(nik)
-    print(tanggal_lahir)
-    print(tempat_lahir)
-    print(kewarganegaraan)
+    # # fileCounter += 1 
+    # # Tampilkan hasil ekstraksi data
+    # print(nama)
+    # print(umur)
+    # print(jenis_kelamin)
+    # print(agama)
+    # print(nik)
+    # print(tanggal_lahir)
+    # print(tempat_lahir)
+    # print(kewarganegaraan)
+    # return render_template('upload.html', 
+    #                        filename_wav = filename_wav,
+    #                        message3=input_text,
+    #                        extracted_data=extracted_data,
+    #                        nama=nama,
+    #                        umur=umur,
+    #                        jenis_kelamin=jenis_kelamin,
+    #                        agama=agama,
+    #                        nik=nik,
+    #                        tanggal_lahir=tanggal_lahir,
+    #                        tempat_lahir=tempat_lahir,
+    #                        kewarganegaraan=kewarganegaraan
+    #                       )
     return render_template('upload.html', 
                            filename_wav = filename_wav,
                            message3=input_text,
                            extracted_data=extracted_data,
-                           nama=nama,
-                           umur=umur,
-                           jenis_kelamin=jenis_kelamin,
-                           agama=agama,
-                           nik=nik,
-                           tanggal_lahir=tanggal_lahir,
-                           tempat_lahir=tempat_lahir,
-                           kewarganegaraan=kewarganegaraan
+                           data=data
                           )
 
 @app.route('/simpan', methods=['POST'])
