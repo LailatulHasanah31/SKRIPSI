@@ -1,91 +1,313 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Upload Suara</title>
-    <link rel="stylesheet" href="static/css/bootstrap.min.css">
-    <link href="static/css/viewandro.css" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="static/css/bootstrap.min.css" />
+    <link href="static/css/viewandro.css" rel="stylesheet" />
+  </head>
+  <body>
     <div class="container">
-        <div class="screen">
-            <div class="screen__content">
-                <div class="contain_div2" style="position: fixed; top: 70px; left:5%;">
-                    <!-- <div class="contain_div2" style="position: fixed; top: 70px;"> -->
-                <form action="/upload" method="post" enctype="multipart/form-data">
-                    <input type="file" name="suara" accept=".mp3">
-                    <!-- <input type="file" name="suara" accept=".webm"> -->
-                    <input type="submit" value="Upload" style="position: fixed; top: 120px; left:8%;">
-                </form>
-                </div>
+      <div class="screen">
+        <div class="screen__content">
+          <div class="contain_div2" style="position: fixed; top: 5px">
+            <!-- <div class="contain_div2" style="position: fixed; top: 70px;"> -->
+            <form action="/upload" method="post" enctype="multipart/form-data">
+              <input
+                type="file"
+                name="suara"
+                accept=".mp3"
+                style="
+                  width: 340px;
+                  height: 35px;
+                  font-family: Arial, sans-serif;
+                  font-size: 16px;
+                  font-weight: bold;
+                "
+              />
+              <!-- <input type="file" name="suara" accept=".webm"> -->
+              <div class="contain_div2">
+                <input
+                  type="submit"
+                  value="Upload"
+                  style="
+                    position: fixed;
+                    top: 50px;
+                    width: 80px;
+                    height: 28px;
+                    font-family: Arial, sans-serif;
+                    font-size: 16px;
+                    font-weight: bold;
+                  "
+                />
+              </div>
+            </form>
+          </div>
 
-                {% if message == 'Suara berhasil diunggah!' %}
-                <div class="contain_div2" style="position: fixed; top: 150px;">
-                    <p class="alert alert-success" >{{ message }}</p>
-                </div>
-                <div class="contain_div2" style="position: fixed; top: 230px;">
-                    <form action="/konversi" method="post">
-                        <input type="hidden" name="filename" value="{{ filename }}">
-                        <button type="submit">Konversi</button>
-                    </form>
-                </div>
-                {% endif %}
-                
-                {% if message2 == 'File berhasil dikonversi' %}
-                <div class="contain_div2" style="position: fixed; top: 150px;">
-                    <p class="alert alert-success">{{ message2 }}</p>
-                </div>
-                <div class="contain_div2" style="position: fixed; top: 230px;">
-                    <form action="{{ url_for('extract') }}" method="post">
-                        <input type="hidden" name="filename_wav" value="{{ filename_wav }}">
-                        <button type="submit">Extract</button>
-                    </form>
-                </div>
-                {% endif %}
-                <div class="contain_div2">
-                    <div id="notification">
-                        {% if message3 %}
-                        <div class="contain_div2" style="position: fixed; top: 150px; left: 40%">
-                            <form action="{{ url_for('extract') }}" method="post">
-                                <input type="hidden" name="filename_wav" value="{{ filename_wav }}">
-                                <button type="submit">Extract</button>
-                            </form>
-                        </div>
-                        <div class="contain_div2" style="position: fixed; top: 190px; left: 4%">
-                            <audio controls>
-                                <source src="{{ url_for('static', filename='audio/' + filename_wav) }}" type="audio/wav">
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                        <!-- <p>{{ message3 }}</p>
-                        <p>{{ extracted_data }}</p> -->
-                        <div class="form-group">
-                        <form action="/simpan" method="post">
-                            <label for="nama">Nama:</label>
-                            <input type="text" id="nama" name="nama" value="{{ nama }}"><br>
-                            <label for="umur">Umur:</label>
-                            <input type="text" id="umur" name="umur" value="{{ umur }}"><br>
-                            <label for="jenis_kelamin">Jenis Kelamin:</label>
-                            <input type="text" id="jenis_kelamin" name="jenis_kelamin" value="{{ jenis_kelamin }}"><br>
-                            <label for="agama">Agama:</label>
-                            <input type="text" id="agama" name="agama" value="{{ agama }}"><br>
-                            <label for="nik">NIK:</label>
-                            <input type="text" id="nik" name="nik" value="{{ nik }}"><br>
-                            <label for="tanggal_lahir">Tanggal Lahir:</label>
-                            <input type="text" id="tanggal_lahir" name="tanggal_lahir" value="{{ tanggal_lahir }}"><br>
-                            <label for="tempat_lahir">Tempat Lahir:</label>
-                            <input type="text" id="tempat_lahir" name="tempat_lahir" value="{{ tempat_lahir }}"><br>
-                            <label for="kewarganegaraan">Kewarganegaraan:</label>
-                            <input type="text" id="kewarganegaraan" name="kewarganegaraan" value="{{ kewarganegaraan }}"><br>
-                            <button type="submit" class="btn btn-info" style="position: fixed; top: 520px;">Simpan</button>
-                        </form>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-            <a href="{{ url_for('home') }}" class="btn btn-info" style="position: fixed; top: 570px;">Kembali</a>
+          {% if message == 'Suara berhasil diunggah!' %}
+          <p
+            class="alert alert-success"
+            style="
+              top: 80px;
+              position: fixed;
+              width: 340px;
+              font-family: Arial, sans-serif;
+              font-size: 16px;
+              font-weight: bold;
+              text-align: center;
+            "
+          >
+            {{ message }}
+          </p>
+        <div class="contain_div2" style="position: fixed; top: 135px">
+          <form action="/konversi" method="post">
+            <input type="hidden" name="filename" value="{{ filename }}" />
+            <button type="submit" style="
+            width: 340px;
+            height: 28px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          ">Konversi</button>
+          </form>
         </div>
-    </div>   
-</body>
+
+        {% endif %} {% if message2 == 'File berhasil dikonversi' %}
+        <p class="alert alert-success"
+        style="
+          top: 80px;
+          position: fixed;
+          width: 340px;
+          font-family: Arial, sans-serif;
+          font-size: 16px;
+          font-weight: bold;
+          text-align: center;
+        ">{{ message2 }}</p>
+        <div class="contain_div2" style="position: fixed; top: 135px">
+          <form action="{{ url_for('extract') }}" method="post">
+            <input
+              type="hidden"
+              name="filename_wav"
+              value="{{ filename_wav }}"
+            />
+            <button type="submit" style="
+            width: 340px;
+            height: 28px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          ">Extract</button>
+          </form>
+        </div>
+        {% endif %}
+        <div class="contain_div2">
+          <div id="notification">
+            {% if message3 %}
+            <div
+              class="contain_div2"
+              style="position: fixed; top: 75px;"
+            >
+              <form action="{{ url_for('extract') }}" method="post">
+                <input
+                  type="hidden"
+                  name="filename_wav"
+                  value="{{ filename_wav }}"
+                />
+                <button type="submit" style="
+                width: 340px;
+                height: 28px;
+                font-family: Arial, sans-serif;
+                font-size: 16px;
+                font-weight: bold;
+                text-align: center;
+              ">Extract</button>
+              </form>
+            </div>
+            <div
+              class="contain_div2"
+              style="position: fixed; top: 110px;"
+            >
+              <audio controls>
+                <source
+                  src="{{ url_for('static', filename='audio/' + filename_wav) }}"
+                  type="audio/wav"
+                />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+            <!-- <p>{{ message3 }}</p>
+                        <p>{{ extracted_data }}</p> -->
+            <div class="form-container"
+            style="position: fixed; top: 190px;">
+              <form action="/simpan" method="post">
+                <label for="provinsi">Provinsi:</label>
+                <input
+                  type="text"
+                  id="provinsi"
+                  name="provinsi"
+                  value="{{ data.provinsi }}"
+                /><br />
+                <label for="kabupaten_kota">Kabupaten/Kota:</label>
+                <input
+                  type="text"
+                  id="kabupaten_kota"
+                  name="kabupaten_kota"
+                  value="{{ data.kabupaten_kota }}"
+                /><br />
+                <label for="kecamatan">kecamatan:</label>
+                <input
+                  type="text"
+                  id="kecamatan"
+                  name="kecamatan"
+                  value="{{ data.kecamatan }}"
+                /><br />
+                <label for="desa_kelurahan">Desa/Kelurahan:</label>
+                <input
+                  type="text"
+                  id="desa_kelurahan"
+                  name="desa_kelurahan"
+                  value="{{ data.desa_kelurahan }}"
+                /><br />
+                <label for="nama_kepala_keluarga">Nama Kepala Keluarga:</label>
+                <input
+                  type="text"
+                  id="nama_kepala_keluarga"
+                  name="nama_kepala_keluarga"
+                  value="{{ data.nama_kepala_keluarga }}"
+                /><br />
+                <label for="jumlah_anggota_keluarga">Jumlah Anggota Keluarga:</label>
+                <input
+                  type="text"
+                  id="jumlah_anggota_keluarga"
+                  name="jumlah_anggota_keluarga"
+                  value="{{ data.jumlah_anggota_keluarga }}"
+                /><br />
+                <label for="status_kepemilikan_rumah">Status Kepemilikan Rumah:</label>
+                <input
+                  type="text"
+                  id="status_kepemilikan_rumah"
+                  name="status_kepemilikan_rumah"
+                  value="{{ data.status_kepemilikan_rumah }}"
+                /><br />
+                <label for="penggunaan_listrik">Penggunaan Listrik:</label>
+                <input
+                  type="text"
+                  id="penggunaan_listrik"
+                  name="penggunaan_listrik"
+                  value="{{ data.penggunaan_listrik }}"
+                /><br />
+                <label for="sumber_air_minum">Sumber Air Minum:</label>
+                <input
+                  type="text"
+                  id="sumber_air_minum"
+                  name="sumber_air_minum"
+                  value="{{ data.sumber_air_minum }}"
+                /><br />
+                <label for="kepemilikan_jamban">Kepemilikan Jamban:</label>
+                <input
+                  type="text"
+                  id="kepemilikan_jamban"
+                  name="kepemilikan_jamban"
+                  value="{{ data.kepemilikan_jamban }}"
+                /><br />
+                <label for="jenis_lantai">Jenis Lantai:</label>
+                <input
+                  type="text"
+                  id="jenis_lantai"
+                  name="jenis_lantai"
+                  value="{{ data.jenis_lantai }}"
+                /><br />
+                <br />
+
+                {% for member in data.anggota_keluarga %}
+                <label for="nama">Nama:</label>
+                <input
+                  type="text"
+                  id="nama"
+                  name="nama"
+                  value="{{ member.nama }}"
+                /><br />
+                <label for="jenis_kelamin">Jenis Kelamin:</label>
+                <input
+                  type="text"
+                  id="jenis_kelamin"
+                  name="jenis_kelamin"
+                  value="{{ member.jenis_kelamin }}"
+                /><br />
+                <label for="tempat_lahir">Tempat Lahir:</label>
+                <input
+                  type="text"
+                  id="tempat_lahir"
+                  name="tempat_lahir"
+                  value="{{ member.tempat_lahir }}"
+                /><br />
+                <label for="tanggal_lahir">Tanggal Lahir:</label>
+                <input
+                  type="text"
+                  id="tanggal_lahir"
+                  name="tanggal_lahir"
+                  value="{{ member.tanggal_lahir }}"
+                /><br />
+                <label for="umur">Umur:</label>
+                <input
+                  type="text"
+                  id="umur"
+                  name="umur"
+                  value="{{ member.umur }}"
+                /><br />
+                <label for="kewarganegaraan">Kewarganegaraan:</label>
+                <input
+                  type="text"
+                  id="kewarganegaraan"
+                  name="kewarganegaraan"
+                  value="{{ member.kewarganegaraan }}"
+                /><br />
+                <label for="agama">Agama:</label>
+                <input
+                  type="text"
+                  id="agama"
+                  name="agama"
+                  value="{{ member.agama }}"
+                /><br />
+                <label for="status_hubungan_dengan_kepala_keluarga">Status Hubungan dengan Kepala Keluarga:</label>
+                <input
+                  type="text"
+                  id="status_hubungan_dengan_kepala_keluarga"
+                  name="status_hubungan_dengan_kepala_keluarga"
+                  value="{{ member.status_hubungan_dengan_kepala_keluarga }}"
+                /><br />
+                <label for="ijazah_tertinggi">Ijazah Tertinggi:</label>
+                <input
+                  type="text"
+                  id="ijazah_tertinggi"
+                  name="ijazah_tertinggi"
+                  value="{{ member.ijazah_tertinggi }}"
+                /><br />
+                <br />
+                {% endfor %}
+                
+                <button
+                  type="submit"
+                  class="btn btn-info"
+                  style="position: fixed; top: 520px"
+                >
+                  Simpan
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        <a
+          href="{{ url_for('home') }}"
+          class="btn btn-info"
+          style="position: fixed; top: 570px"
+          >Kembali</a
+        >
+      </div>
+    </div>
+  </body>
 </html>
