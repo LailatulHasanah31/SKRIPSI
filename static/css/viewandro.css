@@ -198,12 +198,12 @@ body {
 }
 
 .form-container {
-	max-width: 600px;
+	max-width: 360px;
 	margin: 0 auto;
 	padding: 20px;
 	background-color: #ffffff;
 	border-radius: 8px;
 	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 	overflow-y: auto; /* Tambahkan overflow-y agar dapat di-scroll secara vertikal */
-	max-height: 300px; /* Tentukan tinggi maksimum formulir di mana scroll akan muncul */
+	max-height: 440px; /* Tentukan tinggi maksimum formulir di mana scroll akan muncul */
 }
